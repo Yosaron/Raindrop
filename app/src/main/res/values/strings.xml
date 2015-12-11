@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Raindrop</string>
+    <string name="action_settings">Settings</string>
+    <string name="last_updated_message">"Last updated on "</string>
+    <string name="last_updated_value">20/12/2014</string>
+    <string name="rain_forecast">Will rain</string>
+</resources>

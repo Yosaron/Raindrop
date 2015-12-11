@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RainFragment"
+    tools:showIn="@layout/activity_main"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/raindrop_imageview"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="35dp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rain_forecast"
+        android:textSize="48sp"
+        android:padding="15dp"
+        android:id="@+id/rain_textview"
+        android:layout_gravity="center_horizontal"
+
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/last_updated_texview"
+        android:text="@string/last_updated_value"
+        android:textSize="16sp"
+        android:padding="10dp"
+        />
+
+</LinearLayout>
