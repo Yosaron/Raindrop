@@ -104,7 +104,7 @@ public class RainFragment extends Fragment {
             try {
                 //Construct the URL for forecast.io and attempt to connect
                 final String BASE_URL ="https://api.forecast.io/forecast/";
-                final String API_KEY = "753e2243637bc7967d0f27a82560c14f";
+                final String API_KEY = getString(R.string.apikey);
                 final String LATITUDE_PARAM = "53.483457";
                 final String LONGITUDE_PARAM = "-2.263960";
 
@@ -147,7 +147,7 @@ public class RainFragment extends Fragment {
             }
 
             try{
-                return getPrecipPercent(rainForecastJsonStr);
+                return getPrecipPercent(rainForecastJsonStr, "daily");
             }
             catch(JSONException e){
                 Log.e(LOG_TAG,e.getMessage(),e);
@@ -155,12 +155,12 @@ public class RainFragment extends Fragment {
             return null;
         }
 
-        private Double getPrecipPercent(String jsonStr)
+        private Double getPrecipPercent(String jsonStr, String timeFrame)
                 throws JSONException {
             JSONObject forecastObject = new JSONObject(jsonStr);
-            JSONObject hourlyForecastObject = forecastObject.getJSONObject("daily")
+            JSONObject hourlyForecastObject = forecastObject.getJSONObject(timeFrame)
                     .getJSONArray("data")
-                    .getJSONObject(5);
+                    .getJSONObject(0);
             Double currentPrecipProb = hourlyForecastObject.getDouble("precipProbability");
             return currentPrecipProb*100;
         }

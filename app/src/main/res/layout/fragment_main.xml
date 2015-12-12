@@ -17,8 +17,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="48sp"
-        android:padding="15dp"
+        android:textSize="56sp"
+        android:padding="0dp"
         android:id="@+id/rain_textview"
         android:text="@string/rain_textview_key"
         android:layout_gravity="center_horizontal"
@@ -30,8 +30,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/last_updated_texview"
-        android:textSize="16sp"
-        android:padding="10dp"
+        android:textSize="24sp"
+        android:paddingBottom="10dp"
         />
 
     <TextView
@@ -40,6 +40,6 @@
         android:layout_gravity="center_horizontal"
         android:id="@+id/attribution_textview"
         android:text="Powered by Forecast.io"
-        android:textSize="12sp"/>
+        android:textSize="14sp"/>
 
 </LinearLayout>
