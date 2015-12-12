@@ -17,10 +17,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/rain_forecast"
         android:textSize="48sp"
         android:padding="15dp"
         android:id="@+id/rain_textview"
+        android:text="@string/rain_textview_key"
         android:layout_gravity="center_horizontal"
 
         />
@@ -30,7 +30,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/last_updated_texview"
-        android:text="@string/last_updated_value"
         android:textSize="16sp"
         android:padding="10dp"
         />
