@@ -14,13 +14,21 @@
         android:layout_marginTop="35dp"
         />
 
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_gravity="center_horizontal"
+        />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="56sp"
         android:padding="0dp"
         android:id="@+id/rain_textview"
-        android:text="@string/rain_textview_key"
         android:layout_gravity="center_horizontal"
 
         />

@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -35,6 +36,8 @@ import java.util.Calendar;
  * A placeholder fragment containing a simple view.
  */
 public class RainFragment extends Fragment {
+    private ProgressBar spinner; //new
+    private TextView rainText;
 
     public RainFragment() {
     }
@@ -42,6 +45,7 @@ public class RainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setHasOptionsMenu(true);
     }
 
@@ -49,6 +53,8 @@ public class RainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        rainText = (TextView) rootView.findViewById(R.id.rain_textview);
+        spinner=(ProgressBar) rootView.findViewById(R.id.progressBar1); //new
         //TextView lastDateTextView = ((TextView) rootView.findViewById(R.id.last_updated_texview));
         //lastDateTextView.setText(getString(R.string.last_updated_message, getString(R.string.last_updated_value)));
         return rootView;
@@ -92,6 +98,13 @@ public class RainFragment extends Fragment {
 
     public class getRainTask extends AsyncTask<String, Void, Double> {
         private final String LOG_TAG = getRainTask.class.getSimpleName();
+
+        @Override
+        protected void onPreExecute() {
+            rainText.setVisibility(View.GONE);
+            spinner.setVisibility(View.VISIBLE); //new
+            super.onPreExecute();
+        }
 
         @Override
         protected Double doInBackground(String... params) {
@@ -167,9 +180,11 @@ public class RainFragment extends Fragment {
 
         protected void onPostExecute(Double result) {
             if (result != null){
-                TextView text = (TextView) getActivity().findViewById(R.id.rain_textview);
-                text.setText(Integer.toString(result.intValue()));
-                text.append("%");
+                spinner.setVisibility(View.GONE); //new
+                rainText.setVisibility(View.VISIBLE);
+
+                rainText.setText(Integer.toString(result.intValue()));
+                rainText.append("%");
             }
         }
     }
