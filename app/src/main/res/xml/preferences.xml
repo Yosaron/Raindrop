@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ListPreference
+        android:title="@string/pref_timeframe_label"
+        android:key="@string/pref_timeframe_key"
+        android:defaultValue="@string/pref_timeframe_daily"
+        android:entryValues="@array/pref_timeframe_values"
+        android:entries="@array/pref_timeframe_options" />
+
+</PreferenceScreen>

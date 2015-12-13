@@ -1,10 +1,9 @@
 package com.example.alexahern.raindrop;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,12 +16,9 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +34,8 @@ import java.util.Calendar;
 public class RainFragment extends Fragment {
     private ProgressBar spinner; //new
     private TextView rainText;
+    private TextView timeframeText;
+    String timeFrame;
 
     public RainFragment() {
     }
@@ -52,11 +50,10 @@ public class RainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.rain_fragment, container, false);
         rainText = (TextView) rootView.findViewById(R.id.rain_textview);
-        spinner=(ProgressBar) rootView.findViewById(R.id.progressBar1); //new
-        //TextView lastDateTextView = ((TextView) rootView.findViewById(R.id.last_updated_texview));
-        //lastDateTextView.setText(getString(R.string.last_updated_message, getString(R.string.last_updated_value)));
+        timeframeText = (TextView) rootView.findViewById(R.id.timeframeTextView);
+        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar1); //new
         return rootView;
     }
 
@@ -67,10 +64,18 @@ public class RainFragment extends Fragment {
         setCurrentTime();
     }
 
-    public void setCurrentTime(){
+    public void setCurrentTime() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String currentTime = sdf.format(cal.getTime());
+
+        if(timeFrame.equals("hourly")){
+            timeframeText.setText(getString(R.string.hourly_timeframe_message));
+        }
+        else if(timeFrame.equals("daily")){
+            timeframeText.setText(getString(R.string.daily_timeframe_message));
+        }
+
         TextView lastDateTextView = ((TextView) getActivity().findViewById(R.id.last_updated_texview));
         lastDateTextView.setText(getString(R.string.last_updated_message, currentTime));
     }
@@ -80,9 +85,12 @@ public class RainFragment extends Fragment {
         inflater.inflate(R.menu.rainfragment, menu);
     }
 
-    private void updateWeather(){
+    private void updateWeather() {
         getRainTask rainTask = new getRainTask();
-        rainTask.execute();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
+                getString(R.string.pref_timeframe_daily));
+        rainTask.execute(timeFrame);
     }
 
 
@@ -108,22 +116,23 @@ public class RainFragment extends Fragment {
 
         @Override
         protected Double doInBackground(String... params) {
-        //if (params.length==0){
-        //    return null;
-        //}
+            if (params.length == 0) {
+                return null;
+            }
+
             HttpURLConnection urlConnection = null;
             String rainForecastJsonStr = null;
             BufferedReader reader = null;
             try {
                 //Construct the URL for forecast.io and attempt to connect
-                final String BASE_URL ="https://api.forecast.io/forecast/";
+                final String BASE_URL = "https://api.forecast.io/forecast/";
                 final String API_KEY = getString(R.string.apikey);
                 final String LATITUDE_PARAM = "53.483457";
                 final String LONGITUDE_PARAM = "-2.263960";
 
                 Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                         .appendPath(API_KEY)
-                        .appendPath(LATITUDE_PARAM+","+LONGITUDE_PARAM)
+                        .appendPath(LATITUDE_PARAM + "," + LONGITUDE_PARAM)
                         .build();
 
                 URL url = new URL(builtUri.toString());
@@ -135,35 +144,31 @@ public class RainFragment extends Fragment {
                 StringBuffer buffer = new StringBuffer();
                 reader = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
-                while((line = reader.readLine()) != null){
+                while ((line = reader.readLine()) != null) {
                     buffer.append(line);
                 }
                 rainForecastJsonStr = buffer.toString();
 
-            }
-            catch(IOException e){
-                Log.e(LOG_TAG,"Error",e);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error", e);
                 return null;
-            }
-            finally{
-                if (urlConnection != null){
+            } finally {
+                if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
-                if (reader != null){
-                    try{
+                if (reader != null) {
+                    try {
                         reader.close();
-                    }
-                    catch(IOException e){
+                    } catch (IOException e) {
                         Log.e(LOG_TAG, "Error closing stream", e);
                     }
                 }
             }
 
-            try{
-                return getPrecipPercent(rainForecastJsonStr, "daily");
-            }
-            catch(JSONException e){
-                Log.e(LOG_TAG,e.getMessage(),e);
+            try {
+                return getPrecipPercent(rainForecastJsonStr, params[0]);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
             }
             return null;
         }
@@ -171,15 +176,17 @@ public class RainFragment extends Fragment {
         private Double getPrecipPercent(String jsonStr, String timeFrame)
                 throws JSONException {
             JSONObject forecastObject = new JSONObject(jsonStr);
-            JSONObject hourlyForecastObject = forecastObject.getJSONObject(timeFrame)
+            JSONObject timeframeForecastObject;
+            timeframeForecastObject = forecastObject.getJSONObject(timeFrame)
                     .getJSONArray("data")
                     .getJSONObject(0);
-            Double currentPrecipProb = hourlyForecastObject.getDouble("precipProbability");
-            return currentPrecipProb*100;
+
+            Double currentPrecipProb = timeframeForecastObject.getDouble("precipProbability");
+            return currentPrecipProb * 100;
         }
 
         protected void onPostExecute(Double result) {
-            if (result != null){
+            if (result != null) {
                 spinner.setVisibility(View.GONE); //new
                 rainText.setVisibility(View.VISIBLE);
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_timeframe_options">
+        <item>@string/pref_timeframe_label_daily</item>
+        <item>@string/pref_timeframe_label_hourly</item>
+    </string-array>
+
+    <string-array name="pref_timeframe_values">
+        <item>@string/pref_timeframe_daily</item>
+        <item>@string/pref_timeframe_hourly</item>
+    </string-array>
+</resources>

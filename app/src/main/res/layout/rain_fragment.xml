@@ -6,12 +6,20 @@
     tools:showIn="@layout/activity_main"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/timeframeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:paddingTop="20dp"
+        android:text="Will it rain today?"
+        android:layout_gravity="center_horizontal"/>
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/raindrop_imageview"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="35dp"
         />
 
     <ProgressBar
