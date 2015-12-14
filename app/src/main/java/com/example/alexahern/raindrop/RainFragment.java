@@ -1,6 +1,9 @@
 package com.example.alexahern.raindrop;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -15,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +38,8 @@ import java.util.Calendar;
 public class RainFragment extends Fragment {
     private ProgressBar spinner; //new
     private TextView rainText;
-    private TextView timeframeText;
+    private TextView timeFrameText;
+    private TextView lastDateTextView;
     String timeFrame;
 
     public RainFragment() {
@@ -52,7 +57,7 @@ public class RainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.rain_fragment, container, false);
         rainText = (TextView) rootView.findViewById(R.id.rain_textview);
-        timeframeText = (TextView) rootView.findViewById(R.id.timeframeTextView);
+        timeFrameText = (TextView) rootView.findViewById(R.id.timeframeTextView);
         spinner = (ProgressBar) rootView.findViewById(R.id.progressBar1); //new
         return rootView;
     }
@@ -61,23 +66,26 @@ public class RainFragment extends Fragment {
     public void onStart() {
         super.onStart();
         updateWeather();
-        setCurrentTime();
     }
 
-    public void setCurrentTime() {
+    public String getCurrentTime() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String currentTime = sdf.format(cal.getTime());
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_updated_key", currentTime);
+        editor.apply();
+
         if(timeFrame.equals("hourly")){
-            timeframeText.setText(getString(R.string.hourly_timeframe_message));
+            timeFrameText.setText(getString(R.string.hourly_timeframe_message));
         }
         else if(timeFrame.equals("daily")){
-            timeframeText.setText(getString(R.string.daily_timeframe_message));
+            timeFrameText.setText(getString(R.string.daily_timeframe_message));
         }
 
-        TextView lastDateTextView = ((TextView) getActivity().findViewById(R.id.last_updated_texview));
-        lastDateTextView.setText(getString(R.string.last_updated_message, currentTime));
+        return currentTime;
     }
 
     @Override
@@ -86,11 +94,24 @@ public class RainFragment extends Fragment {
     }
 
     private void updateWeather() {
-        getRainTask rainTask = new getRainTask();
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
                 getString(R.string.pref_timeframe_daily));
-        rainTask.execute(timeFrame);
+
+        lastDateTextView = ((TextView) getActivity().findViewById(R.id.last_updated_textview));
+        lastDateTextView.setText(getString(R.string.last_updated_message , prefs.getString("last_updated_key", "never")));
+
+        if (networkInfo != null && networkInfo.isConnected()){
+            getRainTask rainTask = new getRainTask();
+            rainTask.execute(timeFrame);
+        }
+        else{
+            Toast.makeText(getContext(),"NETWORK ERROR", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -189,9 +210,13 @@ public class RainFragment extends Fragment {
             if (result != null) {
                 spinner.setVisibility(View.GONE); //new
                 rainText.setVisibility(View.VISIBLE);
+                getCurrentTime();
 
                 rainText.setText(Integer.toString(result.intValue()));
                 rainText.append("%");
+
+                lastDateTextView.setText(getString(R.string.last_updated_message , getCurrentTime()));
+
             }
         }
     }

@@ -18,11 +18,6 @@ public class SettingsActivity extends AppCompatActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("Settings");
         setSupportActionBar(toolbar);
-
-        // Display the fragment as the main content.
-        /*getFragmentManager().beginTransaction()
-                .add(android.R.id.content, new SettingsFragment())
-                .commit();*/
     }
 
 

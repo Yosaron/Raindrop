@@ -27,7 +27,7 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:layout_gravity="center_horizontal"
         />
 
@@ -45,7 +45,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/last_updated_texview"
+        android:id="@+id/last_updated_textview"
+        android:text="@string/last_updated_message"
         android:textSize="24sp"
         android:paddingBottom="10dp"
         />
