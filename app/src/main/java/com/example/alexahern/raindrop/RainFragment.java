@@ -1,12 +1,15 @@
 package com.example.alexahern.raindrop;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,11 +32,16 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
     private TextView timeFrameText;
     private TextView lastDateTextView;
     private String timeFrame;
+    private ShareActionProvider mShareActionProvider;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    public String getTimeFrame(){
+        return timeFrame;
     }
 
     @Override
@@ -76,6 +84,19 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.rainfragment, menu);
+        MenuItem shareMenuItem = menu.findItem(R.id.action_share);
+
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);
+    }
+
+    public void setShareIntent(String textToShare) {
+        Intent shareButtonIntent = new Intent();
+        shareButtonIntent.setAction(Intent.ACTION_SEND);
+        shareButtonIntent.putExtra(Intent.EXTRA_TEXT, textToShare);
+        shareButtonIntent.setType("text/plain");
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(shareButtonIntent);
+        }
     }
 
     private void updateWeather() {

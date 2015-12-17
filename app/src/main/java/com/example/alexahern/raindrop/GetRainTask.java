@@ -28,6 +28,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
     public interface Callback {
         void displayLoading();
         void displayResult(int result);
+        void setShareIntent(String input);
+        String getTimeFrame();
     }
 
     @Override
@@ -117,6 +119,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
     protected void onPostExecute(Double result) {
         if (result != null) {
             resultCallback.displayResult(result.intValue());
+            resultCallback.setShareIntent("There is a " + result.intValue() + "% "+resultCallback.getTimeFrame() + " chance of rain.");
         }
     }
+
 }
