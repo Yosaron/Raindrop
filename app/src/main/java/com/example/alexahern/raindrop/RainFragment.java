@@ -4,12 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,35 +17,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class RainFragment extends Fragment {
+public class RainFragment extends Fragment implements GetRainTask.Callback {
     private ProgressBar spinner; //new
     private TextView rainText;
     private TextView timeFrameText;
     private TextView lastDateTextView;
-    String timeFrame;
-
-    public RainFragment() {
-    }
+    private String timeFrame;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setHasOptionsMenu(true);
     }
 
@@ -56,9 +40,10 @@ public class RainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.rain_fragment, container, false);
+        lastDateTextView = ((TextView) rootView.findViewById(R.id.last_updated_textview));
         rainText = (TextView) rootView.findViewById(R.id.rain_textview);
         timeFrameText = (TextView) rootView.findViewById(R.id.timeframeTextView);
-        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar1); //new
+        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar); //new
         return rootView;
     }
 
@@ -102,11 +87,10 @@ public class RainFragment extends Fragment {
         timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
                 getString(R.string.pref_timeframe_daily));
 
-        lastDateTextView = ((TextView) getActivity().findViewById(R.id.last_updated_textview));
-        lastDateTextView.setText(getString(R.string.last_updated_message , prefs.getString("last_updated_key", "never")));
+        lastDateTextView.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
 
         if (networkInfo != null && networkInfo.isConnected()){
-            getRainTask rainTask = new getRainTask();
+            GetRainTask rainTask = new GetRainTask(this,  getString(R.string.apikey));
             rainTask.execute(timeFrame);
         }
         else{
@@ -114,7 +98,23 @@ public class RainFragment extends Fragment {
         }
     }
 
+    @Override
+    public void displayLoading(){
+        rainText.setVisibility(View.GONE);
+        spinner.setVisibility(View.VISIBLE);
+    }
 
+    @Override
+    public void displayResult(int result){
+        spinner.setVisibility(View.GONE); //new
+        rainText.setVisibility(View.VISIBLE);
+
+        rainText.setText(result+"");
+        rainText.append("%");
+
+        lastDateTextView.setText(getString(R.string.last_updated_message , getCurrentTime()));
+
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -125,99 +125,4 @@ public class RainFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    public class getRainTask extends AsyncTask<String, Void, Double> {
-        private final String LOG_TAG = getRainTask.class.getSimpleName();
-
-        @Override
-        protected void onPreExecute() {
-            rainText.setVisibility(View.GONE);
-            spinner.setVisibility(View.VISIBLE); //new
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Double doInBackground(String... params) {
-            if (params.length == 0) {
-                return null;
-            }
-
-            HttpURLConnection urlConnection = null;
-            String rainForecastJsonStr = null;
-            BufferedReader reader = null;
-            try {
-                //Construct the URL for forecast.io and attempt to connect
-                final String BASE_URL = "https://api.forecast.io/forecast/";
-                final String API_KEY = getString(R.string.apikey);
-                final String LATITUDE_PARAM = "53.483457";
-                final String LONGITUDE_PARAM = "-2.263960";
-
-                Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-                        .appendPath(API_KEY)
-                        .appendPath(LATITUDE_PARAM + "," + LONGITUDE_PARAM)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-                rainForecastJsonStr = buffer.toString();
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            try {
-                return getPrecipPercent(rainForecastJsonStr, params[0]);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-            }
-            return null;
-        }
-
-        private Double getPrecipPercent(String jsonStr, String timeFrame)
-                throws JSONException {
-            JSONObject forecastObject = new JSONObject(jsonStr);
-            JSONObject timeframeForecastObject;
-            timeframeForecastObject = forecastObject.getJSONObject(timeFrame)
-                    .getJSONArray("data")
-                    .getJSONObject(0);
-
-            Double currentPrecipProb = timeframeForecastObject.getDouble("precipProbability");
-            return currentPrecipProb * 100;
-        }
-
-        protected void onPostExecute(Double result) {
-            if (result != null) {
-                spinner.setVisibility(View.GONE); //new
-                rainText.setVisibility(View.VISIBLE);
-                getCurrentTime();
-
-                rainText.setText(Integer.toString(result.intValue()));
-                rainText.append("%");
-
-                lastDateTextView.setText(getString(R.string.last_updated_message , getCurrentTime()));
-
-            }
-        }
-    }
 }
