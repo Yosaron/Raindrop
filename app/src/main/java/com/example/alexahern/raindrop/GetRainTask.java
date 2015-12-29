@@ -27,8 +27,11 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
 
     public interface Callback {
         void displayLoading();
+
         void displayResult(int result);
+
         void setShareIntent(String input);
+
         String getTimeFrame();
     }
 
@@ -47,7 +50,7 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         String rainForecastJsonStr = downloadWeatherJson();
 
         try {
-            return getPrecipPercent(rainForecastJsonStr, params[0]);
+            return getProbabilityOfRainFromJson(rainForecastJsonStr, params[0]);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -59,16 +62,20 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         return fetchUri(buildUri());
     }
 
+    private void connectToUrl(URL url) throws IOException {
+
+    }
+
     private String fetchUri(Uri builtUri) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         StringBuilder buffer = new StringBuilder();
+
         try {
             URL url = new URL(builtUri.toString());
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
-
             InputStream inputStream = urlConnection.getInputStream();
             reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
@@ -104,22 +111,25 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
                 .build();
     }
 
-    private Double getPrecipPercent(String jsonStr, String timeFrame)
+    private Double getProbabilityOfRainFromJson(String jsonStr, String timeFrame)
             throws JSONException {
-        JSONObject forecastObject = new JSONObject(jsonStr);
-        JSONObject timeframeForecastObject;
-        timeframeForecastObject = forecastObject.getJSONObject(timeFrame)
+        JSONObject fullForecast = new JSONObject(jsonStr);
+        JSONObject forecastForTimeFrame = fullForecast.getJSONObject(timeFrame)
                 .getJSONArray("data")
                 .getJSONObject(0);
 
-        Double currentPrecipProb = timeframeForecastObject.getDouble("precipProbability");
-        return currentPrecipProb * 100;
+        Double probabilityOfRain = forecastForTimeFrame.getDouble("precipProbability");
+        return formatToPercentage(probabilityOfRain);
+    }
+
+    private Double formatToPercentage(Double probabilityOfRain) {
+        return probabilityOfRain * 100;
     }
 
     protected void onPostExecute(Double result) {
         if (result != null) {
             resultCallback.displayResult(result.intValue());
-            resultCallback.setShareIntent("There is a " + result.intValue() + "% "+resultCallback.getTimeFrame() + " chance of rain.");
+            resultCallback.setShareIntent("There is a " + result.intValue() + "% " + resultCallback.getTimeFrame() + " chance of rain.");
         }
     }
 

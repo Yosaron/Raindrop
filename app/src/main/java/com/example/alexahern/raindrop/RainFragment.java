@@ -27,10 +27,10 @@ import java.util.Calendar;
  * A placeholder fragment containing a simple view.
  */
 public class RainFragment extends Fragment implements GetRainTask.Callback {
-    private ProgressBar spinner; //new
-    private TextView rainText;
-    private TextView timeFrameText;
-    private TextView lastDateTextView;
+    private ProgressBar spinningLoader;
+    private TextView chanceOfRain;
+    private TextView periodOfMeasurement;
+    private TextView lastUpdated;
     private String timeFrame;
     private ShareActionProvider mShareActionProvider;
 
@@ -40,7 +40,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
         setHasOptionsMenu(true);
     }
 
-    public String getTimeFrame(){
+    public String getTimeFrame() {
         return timeFrame;
     }
 
@@ -48,10 +48,10 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.rain_fragment, container, false);
-        lastDateTextView = ((TextView) rootView.findViewById(R.id.last_updated_textview));
-        rainText = (TextView) rootView.findViewById(R.id.rain_textview);
-        timeFrameText = (TextView) rootView.findViewById(R.id.timeframeTextView);
-        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar); //new
+        lastUpdated = ((TextView) rootView.findViewById(R.id.last_updated_textview));
+        chanceOfRain = (TextView) rootView.findViewById(R.id.rain_textview);
+        periodOfMeasurement = (TextView) rootView.findViewById(R.id.periodOfMeasurement);
+        spinningLoader = (ProgressBar) rootView.findViewById(R.id.spinningLoader);
         return rootView;
     }
 
@@ -61,25 +61,54 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
         updateWeather();
     }
 
-    public String getCurrentTime() {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        String currentTime = sdf.format(cal.getTime());
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("last_updated_key", currentTime);
-        editor.apply();
-
-        if(timeFrame.equals("hourly")){
-            timeFrameText.setText(getString(R.string.hourly_timeframe_message));
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            updateWeather();
+            return true;
         }
-        else if(timeFrame.equals("daily")){
-            timeFrameText.setText(getString(R.string.daily_timeframe_message));
-        }
-
-        return currentTime;
+        return super.onOptionsItemSelected(item);
     }
+
+    public SharedPreferences getSharedPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(getActivity());
+    }
+
+    public void setTimeFrameFromPreference() {
+        SharedPreferences prefs = getSharedPreferences();
+        timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
+                getString(R.string.pref_timeframe_daily));
+    }
+
+    public void displayNetworkErrorMessage() {
+        Toast.makeText(getContext(), "NETWORK ERROR", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateWeather() {
+        setTimeFrameFromPreference();
+
+        if (thereIsANetwork()) {
+            setLastUpdatedWithStoredTime();
+            executeRainTaskWithApiKeyAndTimeFrame();
+        } else {
+            displayNetworkErrorMessage();
+        }
+    }
+
+    public void executeRainTaskWithApiKeyAndTimeFrame() {
+        GetRainTask rainTask = new GetRainTask(this, getString(R.string.apikey));
+        rainTask.execute(timeFrame);
+    }
+
+    public boolean thereIsANetwork() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -99,51 +128,56 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
         }
     }
 
-    private void updateWeather() {
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-        timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
-                getString(R.string.pref_timeframe_daily));
-
-        lastDateTextView.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
-
-        if (networkInfo != null && networkInfo.isConnected()){
-            GetRainTask rainTask = new GetRainTask(this,  getString(R.string.apikey));
-            rainTask.execute(timeFrame);
-        }
-        else{
-            Toast.makeText(getContext(),"NETWORK ERROR", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    public void displayLoading() {
+        chanceOfRain.setVisibility(View.GONE);
+        spinningLoader.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void displayLoading(){
-        rainText.setVisibility(View.GONE);
-        spinner.setVisibility(View.VISIBLE);
+    public void displayResult(int result) {
+        hideLoading();
+        chanceOfRain.setText(result + "");
+        chanceOfRain.append("%");
+        setLastUpdatedWithNewTime();
     }
 
-    @Override
-    public void displayResult(int result){
-        spinner.setVisibility(View.GONE); //new
-        rainText.setVisibility(View.VISIBLE);
-
-        rainText.setText(result+"");
-        rainText.append("%");
-
-        lastDateTextView.setText(getString(R.string.last_updated_message , getCurrentTime()));
-
+    public void hideLoading() {
+        spinningLoader.setVisibility(View.GONE);
+        chanceOfRain.setVisibility(View.VISIBLE);
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            updateWeather();
-            return true;
+
+    public void setLastUpdatedWithNewTime() {
+        String currentTime = getCurrentTime();
+        setTimeFrameMessage();
+        lastUpdated.setText(getString(R.string.last_updated_message, currentTime));
+        saveCurrentTimeToSharedPreferences(currentTime);
+    }
+
+    public void setLastUpdatedWithStoredTime() {
+        SharedPreferences prefs = getSharedPreferences();
+        lastUpdated.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
+    }
+
+    public String getCurrentTime() {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        return sdf.format(cal.getTime());
+    }
+
+    public void setTimeFrameMessage() {
+        if (timeFrame.equals("hourly")) {
+            periodOfMeasurement.setText(getString(R.string.hourly_timeframe_message));
+        } else if (timeFrame.equals("daily")) {
+            periodOfMeasurement.setText(getString(R.string.daily_timeframe_message));
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    public void saveCurrentTimeToSharedPreferences(String currentTime) {
+        SharedPreferences prefs = getSharedPreferences();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_updated_key", currentTime);
+        editor.apply();
     }
 
 }
