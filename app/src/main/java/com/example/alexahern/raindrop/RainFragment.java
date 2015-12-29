@@ -112,7 +112,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.rainfragment, menu);
+        inflater.inflate(R.menu.menu_rain, menu);
         MenuItem shareMenuItem = menu.findItem(R.id.action_share);
 
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);

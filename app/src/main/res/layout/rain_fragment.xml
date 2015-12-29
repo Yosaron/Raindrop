@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
+        android:fontFamily="sans-serif-light"
         android:paddingTop="20dp"
         android:text="Will it rain today?"
         android:layout_gravity="center_horizontal"/>
@@ -35,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="56sp"
-        android:padding="0dp"
+        android:fontFamily="sans-serif-light"
         android:id="@+id/rain_textview"
         android:layout_gravity="center_horizontal"
 
@@ -46,6 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/last_updated_textview"
+        android:fontFamily="sans-serif-light"
         android:text="@string/last_updated_message"
         android:textSize="24sp"
         android:paddingBottom="10dp"
@@ -55,8 +57,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:fontFamily="sans-serif-light"
         android:id="@+id/attribution_textview"
         android:text="Powered by Forecast.io"
         android:textSize="14sp"/>
+
 
 </LinearLayout>

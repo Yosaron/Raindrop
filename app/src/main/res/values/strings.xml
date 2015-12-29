@@ -16,4 +16,5 @@
     <string name="pref_timeframe_hourly">hourly</string>
     <string name="pref_timeframe_label_hourly">Hourly</string>
     <string name="pref_timeframe_label_daily">Daily</string>
+    <string name="action_share">Share</string>
 </resources>
