@@ -6,7 +6,7 @@
     <string name="rain_textview_key">"Default"</string>
     <string name="apikey">753e2243637bc7967d0f27a82560c14f</string>
     <string name="title_activity_settings">SettingsActivity</string>
-    <string name="hourly_timeframe_message">Will it rain during this hour?</string>
+    <string name="hourly_timeframe_message">Will it rain in this hour?</string>
     <string name="daily_timeframe_message">Will it rain today?</string>
 
     <!-- Preference strings -->

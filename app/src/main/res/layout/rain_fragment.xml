@@ -2,26 +2,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/rainbg"
     tools:context=".RainFragment"
     tools:showIn="@layout/activity_main"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:paddingBottom="56dp">
 
     <TextView
         android:id="@+id/periodOfMeasurement"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:fontFamily="sans-serif-light"
+        android:textSize="30sp"
+        android:fontFamily="sans-serif-black"
         android:paddingTop="20dp"
-        android:text="Will it rain today?"
+        android:text="Will it rain in this hour?"
+        android:textColor="@color/white"
         android:layout_gravity="center_horizontal"/>
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/raindrop_imageview"
-        android:layout_gravity="center_horizontal"
-        />
 
     <ProgressBar
         android:id="@+id/spinningLoader"
@@ -35,10 +32,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="56sp"
-        android:fontFamily="sans-serif-light"
+        android:textSize="70sp"
+        android:fontFamily="sans-serif-black"
         android:id="@+id/rain_textview"
         android:layout_gravity="center_horizontal"
+        android:textColor="@color/white"
 
         />
 
@@ -47,20 +45,22 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/last_updated_textview"
-        android:fontFamily="sans-serif-light"
+        android:fontFamily="sans-serif-black"
         android:text="@string/last_updated_message"
-        android:textSize="24sp"
+        android:textSize="30sp"
         android:paddingBottom="10dp"
+        android:textColor="@color/white"
         />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:fontFamily="sans-serif-light"
+        android:fontFamily="sans-serif-black"
         android:id="@+id/attribution_textview"
         android:text="Powered by Forecast.io"
-        android:textSize="14sp"/>
+        android:textSize="17.5sp"
+        android:textColor="@color/white"/>
 
 
 </LinearLayout>
