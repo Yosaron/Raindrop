@@ -1,7 +1,6 @@
 package com.example.alexahern.raindrop;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,10 +43,10 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     private TextView periodOfMeasurement;
     private TextView lastUpdated;
     private String timeFrame;
-    private String latitude;
-    private String longitude;
+    private String[] latitudeAndLongitude = new String[2];
     private ShareActionProvider mShareActionProvider;
     private GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,6 +66,10 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         return timeFrame;
     }
 
+    public String[] getLatitudeAndLongitude() {
+        return latitudeAndLongitude;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -80,23 +83,22 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
 
     @Override
     public void onStart() {
-        mGoogleApiClient.connect();
         super.onStart();
-        updateWeather();
-
+        mGoogleApiClient.connect();
     }
 
     @Override
     public void onStop() {
-        mGoogleApiClient.disconnect();
         super.onStop();
+        mGoogleApiClient.disconnect();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            updateWeather();
+            askForLocationPermission();
+            checkLocationAndUpdateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -211,19 +213,38 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         editor.apply();
     }
 
+    public void saveLastLocationToSharedPreferences() {
+        SharedPreferences prefs = getSharedPreferences();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("latitude_key", latitudeAndLongitude[0]);
+        editor.putString("longitude_key", latitudeAndLongitude[1]);
+        editor.apply();
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        askForLocationPermission();
+        checkLocationAndUpdateWeather();
+    }
+
+    public void askForLocationPermission() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
+        } else {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
         }
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLastLocation != null){
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
+    }
+
+    public void checkLocationAndUpdateWeather() {
+        if (mLastLocation != null) {
+            latitudeAndLongitude[0] = mLastLocation.getLatitude() + "";
+            latitudeAndLongitude[1] = mLastLocation.getLongitude() + "";
+            saveLastLocationToSharedPreferences();
             String LOG_TAG = getClass().getSimpleName();
-            Log.e("Latitude: "+latitude+" Longitude: " +longitude, LOG_TAG);
+            Log.e("Latitude: " + latitudeAndLongitude[0] + " Longitude: " + latitudeAndLongitude[1], LOG_TAG);
+            updateWeather();
         }
     }
 
@@ -235,6 +256,6 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         String LOG_TAG = getClass().getSimpleName();
-        Log.e("ERROR"+connectionResult, LOG_TAG);
+        Log.e("ERROR" + connectionResult, LOG_TAG);
     }
 }

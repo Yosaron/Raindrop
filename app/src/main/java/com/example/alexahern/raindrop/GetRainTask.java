@@ -33,6 +33,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         void setShareIntent(String input);
 
         String getTimeFrame();
+
+        String[] getLatitudeAndLongitude();
     }
 
     @Override
@@ -59,11 +61,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
 
     @Nullable
     private String downloadWeatherJson() {
-        return fetchUri(buildUri());
-    }
-
-    private void connectToUrl(URL url) throws IOException {
-
+        //return fetchUri(buildUri());
+        return fetchUri(buildUriWithRealLatitudeAndLongitude());
     }
 
     private String fetchUri(Uri builtUri) {
@@ -100,14 +99,13 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         return buffer.toString();
     }
 
-    private Uri buildUri() {
+    private Uri buildUriWithRealLatitudeAndLongitude() {
         final String BASE_URL = "https://api.forecast.io/forecast/";
-        final String LATITUDE_PARAM = "53.483457";
-        final String LONGITUDE_PARAM = "-2.263960";
+        final String[] LATITUDE_AND_LONGITUDE = resultCallback.getLatitudeAndLongitude();
 
         return Uri.parse(BASE_URL).buildUpon()
                 .appendPath(API_KEY)
-                .appendPath(LATITUDE_PARAM + "," + LONGITUDE_PARAM)
+                .appendPath(LATITUDE_AND_LONGITUDE[0] + "," + LATITUDE_AND_LONGITUDE[1])
                 .build();
     }
 
