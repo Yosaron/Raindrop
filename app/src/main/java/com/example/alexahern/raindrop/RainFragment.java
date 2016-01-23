@@ -199,11 +199,13 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     }
 
     public void setTimeFrameMessage() {
-        setTimeFrameFromPreference();
-        if (timeFrame.equals("hourly")) {
-            periodOfMeasurement.setText(getString(R.string.hourly_timeframe_message));
-        } else if (timeFrame.equals("daily")) {
-            periodOfMeasurement.setText(getString(R.string.daily_timeframe_message));
+        if(thereIsANetwork()) {
+            setTimeFrameFromPreference();
+            if (timeFrame.equals("hourly")) {
+                periodOfMeasurement.setText(getString(R.string.hourly_timeframe_message));
+            } else if (timeFrame.equals("daily")) {
+                periodOfMeasurement.setText(getString(R.string.daily_timeframe_message));
+            }
         }
     }
 

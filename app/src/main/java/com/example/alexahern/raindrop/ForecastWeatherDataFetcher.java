@@ -18,7 +18,7 @@ import java.net.URL;
  * Created by alexahern on 23/01/16.
  */
 
-/*Class to get JSON with the users current locationfrom the Open Weather API, and parse it in order to obtain the
+/*Class to get JSON with the users current location from the forecast.io API, and parse it in order to obtain the
 precipitation percentage
  */
 
@@ -80,7 +80,8 @@ public class ForecastWeatherDataFetcher implements WeatherDataFetcher {
 
     @Override
     public String downloadFromUri() {
-        return fetchUri(buildUri());
+        String downloadedJson = fetchUri(buildUri());
+        return downloadedJson;
     }
 
     @Override
