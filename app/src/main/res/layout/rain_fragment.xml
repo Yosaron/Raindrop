@@ -16,7 +16,7 @@
         android:textSize="30sp"
         android:fontFamily="sans-serif-black"
         android:paddingTop="20dp"
-        android:text="Will it rain in this hour?"
+        android:text="Will it rain..."
         android:textColor="@color/white"
         android:layout_gravity="center_horizontal"/>
 

@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-}
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                     rainFragment.askForLocationPermission();
                     rainFragment.checkLocationAndUpdateWeather();
                 } else {
-                    Toast.makeText(this ,"U NEED LOCATION", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "U NEED LOCATION", Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this,SettingsActivity.class));
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 

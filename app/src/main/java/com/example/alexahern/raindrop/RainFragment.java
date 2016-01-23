@@ -77,6 +77,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         lastUpdated = ((TextView) rootView.findViewById(R.id.last_updated_textview));
         chanceOfRain = (TextView) rootView.findViewById(R.id.rain_textview);
         periodOfMeasurement = (TextView) rootView.findViewById(R.id.periodOfMeasurement);
+        setTimeFrameMessage();
         spinningLoader = (ProgressBar) rootView.findViewById(R.id.spinningLoader);
         return rootView;
     }
@@ -119,19 +120,18 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     }
 
     private void updateWeather() {
-        setTimeFrameFromPreference();
-
+        setTimeFrameMessage();
         if (thereIsANetwork()) {
             setLastUpdatedWithStoredTime();
-            executeRainTaskWithApiKeyAndTimeFrame();
+            executeRainTaskWithApiKey();
         } else {
             displayNetworkErrorMessage();
         }
     }
 
-    public void executeRainTaskWithApiKeyAndTimeFrame() {
-        GetRainTask rainTask = new GetRainTask(this, getString(R.string.apikey));
-        rainTask.execute(timeFrame);
+    public void executeRainTaskWithApiKey() {
+        GetRainTask rainTask = new GetRainTask(this);
+        rainTask.execute(getString(R.string.apikey));
     }
 
     public boolean thereIsANetwork() {
@@ -199,6 +199,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     }
 
     public void setTimeFrameMessage() {
+        setTimeFrameFromPreference();
         if (timeFrame.equals("hourly")) {
             periodOfMeasurement.setText(getString(R.string.hourly_timeframe_message));
         } else if (timeFrame.equals("daily")) {
