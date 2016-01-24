@@ -98,7 +98,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            askForLocationPermission();
+            getLocationIfHavePermission();
             checkLocationAndUpdateWeather();
             return true;
         }
@@ -199,7 +199,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     }
 
     public void setTimeFrameMessage() {
-        if(thereIsANetwork()) {
+        if (thereIsANetwork()) {
             setTimeFrameFromPreference();
             if (timeFrame.equals("hourly")) {
                 periodOfMeasurement.setText(getString(R.string.hourly_timeframe_message));
@@ -226,11 +226,11 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        askForLocationPermission();
+        getLocationIfHavePermission();
         checkLocationAndUpdateWeather();
     }
 
-    public void askForLocationPermission() {
+    public void getLocationIfHavePermission() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;

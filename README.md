@@ -7,7 +7,7 @@ A simple app to show the current percentage of precipitation.
 - Choose between daily and hourly forecast
 
 #To do
-- Implement real location
+-~~Implement real location~~ DONE
 - Show more detailed forecasts for the coming hours
 - Optimize layout for larger devices
 
