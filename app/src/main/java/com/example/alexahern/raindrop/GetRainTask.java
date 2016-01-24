@@ -9,6 +9,7 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
     private final Callback resultCallback;
     private final String LOG_TAG = GetRainTask.class.getSimpleName();
 
+
     public GetRainTask(Callback resultCallback) {
         this.resultCallback = resultCallback;
     }
@@ -38,8 +39,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         }
 
         try {
-            WeatherDataFetcher openWeatherDataFetcher = new ForecastWeatherDataFetcher(resultCallback.getLatitudeAndLongitude(), params[0]);
-            return openWeatherDataFetcher.getPercentageChanceOfRain(resultCallback.getTimeFrame());
+            WeatherDataFetcher forecastWeatherDataFetcher = new ForecastWeatherDataFetcher(resultCallback.getLatitudeAndLongitude(), params[0]);
+            return forecastWeatherDataFetcher.getPercentageChanceOfRain(resultCallback.getTimeFrame());
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -50,6 +51,9 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         if (result != null) {
             resultCallback.displayResult(result.intValue());
             resultCallback.setShareIntent("There is a " + result.intValue() + "% " + resultCallback.getTimeFrame() + " chance of rain.");
+        }
+        else{
+            //Do nothing and keep displayed data the same
         }
     }
 

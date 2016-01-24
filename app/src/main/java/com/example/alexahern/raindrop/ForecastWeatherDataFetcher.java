@@ -80,8 +80,7 @@ public class ForecastWeatherDataFetcher implements WeatherDataFetcher {
 
     @Override
     public String downloadFromUri() {
-        String downloadedJson = fetchUri(buildUri());
-        return downloadedJson;
+        return fetchUri(buildUri());
     }
 
     @Override

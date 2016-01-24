@@ -7,6 +7,8 @@ import org.json.JSONException;
 /**
  * Created by alexahern on 23/01/16.
  */
+
+/*Interface for fetching the data from a Uri*/
 public interface WeatherDataFetcher {
     Uri buildUri();
 

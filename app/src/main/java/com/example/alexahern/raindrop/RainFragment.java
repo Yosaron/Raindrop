@@ -42,11 +42,11 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     private TextView chanceOfRain;
     private TextView periodOfMeasurement;
     private TextView lastUpdated;
+
     private String timeFrame;
     private String[] latitudeAndLongitude = new String[2];
     private ShareActionProvider mShareActionProvider;
     private GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,28 +95,55 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_rain, menu);
+        MenuItem shareMenuItem = menu.findItem(R.id.action_share);
+
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            getLocationIfHavePermission();
-            checkLocationAndUpdateWeather();
+            checkLocationAndUpdateWeather(getLocationIfHavePermission());
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public Location getLocationIfHavePermission() {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return null;
+        } else {
+            return LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+        }
+    }
+
+
+    public void checkLocationAndUpdateWeather(Location mLastLocation) {
+        if (mLastLocation != null) {
+            latitudeAndLongitude[0] = mLastLocation.getLatitude() + "";
+            latitudeAndLongitude[1] = mLastLocation.getLongitude() + "";
+            saveLastLocationToSharedPreferences();
+            String LOG_TAG = getClass().getSimpleName();
+            Log.e("Latitude: " + latitudeAndLongitude[0] + " Longitude: " + latitudeAndLongitude[1], LOG_TAG);
+            updateWeather();
+        }
+    }
+
+    public void saveLastLocationToSharedPreferences() {
+        SharedPreferences prefs = getSharedPreferences();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("latitude_key", latitudeAndLongitude[0]);
+        editor.putString("longitude_key", latitudeAndLongitude[1]);
+        editor.apply();
+    }
+
     public SharedPreferences getSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(getActivity());
-    }
-
-    public void setTimeFrameFromPreference() {
-        SharedPreferences prefs = getSharedPreferences();
-        timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
-                getString(R.string.pref_timeframe_daily));
-    }
-
-    public void displayNetworkErrorMessage() {
-        Toast.makeText(getContext(), "NETWORK ERROR", Toast.LENGTH_SHORT).show();
     }
 
     private void updateWeather() {
@@ -127,75 +154,6 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         } else {
             displayNetworkErrorMessage();
         }
-    }
-
-    public void executeRainTaskWithApiKey() {
-        GetRainTask rainTask = new GetRainTask(this);
-        rainTask.execute(getString(R.string.apikey));
-    }
-
-    public boolean thereIsANetwork() {
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-
-        return (networkInfo != null && networkInfo.isConnected());
-    }
-
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_rain, menu);
-        MenuItem shareMenuItem = menu.findItem(R.id.action_share);
-
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);
-    }
-
-    public void setShareIntent(String textToShare) {
-        Intent shareButtonIntent = new Intent();
-        shareButtonIntent.setAction(Intent.ACTION_SEND);
-        shareButtonIntent.putExtra(Intent.EXTRA_TEXT, textToShare);
-        shareButtonIntent.setType("text/plain");
-        if (mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(shareButtonIntent);
-        }
-    }
-
-    @Override
-    public void displayLoading() {
-        chanceOfRain.setVisibility(View.GONE);
-        spinningLoader.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void displayResult(int result) {
-        hideLoading();
-        chanceOfRain.setText(result + "");
-        chanceOfRain.append("%");
-        setLastUpdatedWithNewTime();
-    }
-
-    public void hideLoading() {
-        spinningLoader.setVisibility(View.GONE);
-        chanceOfRain.setVisibility(View.VISIBLE);
-    }
-
-    public void setLastUpdatedWithNewTime() {
-        String currentTime = getCurrentTime();
-        setTimeFrameMessage();
-        lastUpdated.setText(getString(R.string.last_updated_message, currentTime));
-        saveCurrentTimeToSharedPreferences(currentTime);
-    }
-
-    public void setLastUpdatedWithStoredTime() {
-        SharedPreferences prefs = getSharedPreferences();
-        lastUpdated.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
-    }
-
-    public String getCurrentTime() {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-        return sdf.format(cal.getTime());
     }
 
     public void setTimeFrameMessage() {
@@ -209,6 +167,67 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         }
     }
 
+    public boolean thereIsANetwork() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+    public void setTimeFrameFromPreference() {
+        SharedPreferences prefs = getSharedPreferences();
+        timeFrame = prefs.getString(getString(R.string.pref_timeframe_key),
+                getString(R.string.pref_timeframe_daily));
+    }
+
+    public void setLastUpdatedWithStoredTime() {
+        SharedPreferences prefs = getSharedPreferences();
+        lastUpdated.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
+    }
+
+    public void executeRainTaskWithApiKey() {
+        GetRainTask rainTask = new GetRainTask(this);
+        rainTask.execute(getString(R.string.apikey));
+    }
+
+    public void displayNetworkErrorMessage() {
+        Toast.makeText(getContext(), "NETWORK ERROR", Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void setShareIntent(String textToShare) {
+        Intent shareButtonIntent = new Intent();
+        shareButtonIntent.setAction(Intent.ACTION_SEND);
+        shareButtonIntent.putExtra(Intent.EXTRA_TEXT, textToShare);
+        shareButtonIntent.setType("text/plain");
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(shareButtonIntent);
+        }
+    }
+
+
+    @Override
+    public void displayResult(int result) {
+        hideLoading();
+        chanceOfRain.setText(result + "");
+        chanceOfRain.append("%");
+        setLastUpdatedWithNewTime();
+    }
+
+    public void setLastUpdatedWithNewTime() {
+        String currentTime = getCurrentTime();
+        setTimeFrameMessage();
+        lastUpdated.setText(getString(R.string.last_updated_message, currentTime));
+        saveCurrentTimeToSharedPreferences(currentTime);
+    }
+
+    public String getCurrentTime() {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        return sdf.format(cal.getTime());
+    }
+
     public void saveCurrentTimeToSharedPreferences(String currentTime) {
         SharedPreferences prefs = getSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
@@ -216,39 +235,22 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         editor.apply();
     }
 
-    public void saveLastLocationToSharedPreferences() {
-        SharedPreferences prefs = getSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("latitude_key", latitudeAndLongitude[0]);
-        editor.putString("longitude_key", latitudeAndLongitude[1]);
-        editor.apply();
+    @Override
+    public void displayLoading() {
+        chanceOfRain.setVisibility(View.GONE);
+        spinningLoader.setVisibility(View.VISIBLE);
     }
+
+    public void hideLoading() {
+        spinningLoader.setVisibility(View.GONE);
+        chanceOfRain.setVisibility(View.VISIBLE);
+    }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         getLocationIfHavePermission();
-        checkLocationAndUpdateWeather();
-    }
-
-    public void getLocationIfHavePermission() {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            return;
-        } else {
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);
-        }
-    }
-
-    public void checkLocationAndUpdateWeather() {
-        if (mLastLocation != null) {
-            latitudeAndLongitude[0] = mLastLocation.getLatitude() + "";
-            latitudeAndLongitude[1] = mLastLocation.getLongitude() + "";
-            saveLastLocationToSharedPreferences();
-            String LOG_TAG = getClass().getSimpleName();
-            Log.e("Latitude: " + latitudeAndLongitude[0] + " Longitude: " + latitudeAndLongitude[1], LOG_TAG);
-            updateWeather();
-        }
+        checkLocationAndUpdateWeather(getLocationIfHavePermission());
     }
 
     @Override
