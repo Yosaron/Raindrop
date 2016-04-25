@@ -1,10 +1,8 @@
 package com.example.alexahern.raindrop;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,10 +13,6 @@ import java.net.URL;
 
 /**
  * Created by alexahern on 23/01/16.
- */
-
-/*Class to get JSON with the users current location from the forecast.io API, and parse it in order to obtain the
-precipitation percentage
  */
 
 public class ForecastDataFetcher implements DataFetcher {
@@ -44,37 +38,47 @@ public class ForecastDataFetcher implements DataFetcher {
 
     @Override
     public String fetchUri(Uri builtUri) {
+        String buffer;
         HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        StringBuilder buffer = new StringBuilder();
 
         try {
-            URL url = new URL(builtUri.toString());
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-            InputStream inputStream = urlConnection.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
+            urlConnection =  makeConnection(builtUri);
+            buffer = readData(urlConnection.getInputStream());
         } catch (IOException e) {
             Log.e(TAG, "Connection error", e);
             return null;
         } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Error closing stream", e);
-                }
-            }
+            closeConnection(urlConnection);
         }
+        return buffer;
+    }
+
+    private void closeConnection(HttpURLConnection urlConnection) {
+        if (urlConnection != null) {
+            urlConnection.disconnect();
+        }
+    }
+
+    private String readData(InputStream inputStream) throws IOException {
+        BufferedReader reader;
+        StringBuilder buffer = new StringBuilder();
+        reader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line);
+        }
+
         return buffer.toString();
+    }
+
+    @NonNull
+    private HttpURLConnection makeConnection(Uri builtUri) throws IOException {
+        HttpURLConnection urlConnection;
+        URL url = new URL(builtUri.toString());
+        urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
+        urlConnection.connect();
+        return urlConnection;
     }
 
     @Override

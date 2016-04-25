@@ -6,39 +6,25 @@ import android.util.Log;
 import org.json.JSONException;
 
 public class GetRainTask extends AsyncTask<String, Void, Double> {
-    private final Callback resultCallback;
+    private final FragmentCallback rainFragmentCallback;
     private final String LOG_TAG = GetRainTask.class.getSimpleName();
 
-    public GetRainTask(Callback resultCallback) {
-        this.resultCallback = resultCallback;
-    }
-
-    public interface Callback {
-        void displayLoading();
-
-        void displayResult(int result);
-
-        void setShareIntent(String input);
-
-        String getTimeFrame();
-
-        String getApiKey();
-
-        String[] getLatitudeAndLongitude();
+    public GetRainTask(FragmentCallback rainFragmentCallback) {
+        this.rainFragmentCallback = rainFragmentCallback;
     }
 
     @Override
     protected void onPreExecute() {
-        resultCallback.displayLoading();
+        rainFragmentCallback.displayLoading();
         super.onPreExecute();
     }
 
     @Override
     protected Double doInBackground(String... params) {
         try {
-            DataFetcher forecastWeatherDataFetcher = new ForecastDataFetcher(resultCallback.getLatitudeAndLongitude(), resultCallback.getApiKey());
+            DataFetcher forecastWeatherDataFetcher = new ForecastDataFetcher(rainFragmentCallback.getLatitudeAndLongitude(), rainFragmentCallback.getApiKey());
             JsonParser parser = new JsonParser(forecastWeatherDataFetcher.fetchWeatherData());
-            return parser.getPercentageChanceOfRain(resultCallback.getTimeFrame());
+            return parser.getPercentageChanceOfRain(rainFragmentCallback.getTimeFrame());
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -47,8 +33,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
 
     protected void onPostExecute(Double result) {
         if (result != null) {
-            resultCallback.displayResult(result.intValue());
-            resultCallback.setShareIntent("There is a " + result.intValue() + "% " + resultCallback.getTimeFrame() + " chance of rain.");
+            rainFragmentCallback.displayResult(result.intValue());
+            rainFragmentCallback.setShareIntent("There is a " + result.intValue() + "% " + rainFragmentCallback.getTimeFrame() + " chance of rain.");
         }
         else{
             //Do nothing and keep displayed data the same

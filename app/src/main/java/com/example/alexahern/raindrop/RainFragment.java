@@ -37,7 +37,7 @@ import java.util.Calendar;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class RainFragment extends Fragment implements GetRainTask.Callback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RainFragment extends Fragment implements FragmentCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private ProgressBar spinningLoader;
     private TextView chanceOfRain;
     private TextView periodOfMeasurement;
