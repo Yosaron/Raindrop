@@ -10,7 +10,7 @@ import org.json.JSONObject;
 public class JsonParser {
     private String jsonStr;
 
-    public JsonParser(String jsonStr){
+    public JsonParser(String jsonStr) {
         this.jsonStr = jsonStr;
     }
 

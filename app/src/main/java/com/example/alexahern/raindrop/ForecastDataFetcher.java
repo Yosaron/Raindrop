@@ -42,7 +42,7 @@ public class ForecastDataFetcher implements DataFetcher {
         HttpURLConnection urlConnection = null;
 
         try {
-            urlConnection =  makeConnection(builtUri);
+            urlConnection = makeConnection(builtUri);
             buffer = readData(urlConnection.getInputStream());
         } catch (IOException e) {
             Log.e(TAG, "Connection error", e);

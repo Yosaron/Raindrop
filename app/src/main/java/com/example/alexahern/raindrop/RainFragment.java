@@ -34,9 +34,6 @@ import com.google.android.gms.location.LocationServices;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-/**
- * A placeholder fragment containing a simple view.
- */
 public class RainFragment extends Fragment implements FragmentCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private ProgressBar spinningLoader;
     private TextView chanceOfRain;
@@ -112,10 +109,18 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            checkLocationAndUpdateWeather(getLocationIfHavePermission());
+            updateWeatherWithNewLocation();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void updateWeatherWithNewLocation() {
+        Location currentLocation = getLocationIfHavePermission();
+        updateLocation(currentLocation);
+        if (currentLocation != null) {
+            updateWeather();
+        }
     }
 
     public Location getLocationIfHavePermission() {
@@ -128,15 +133,11 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
         }
     }
 
-
-    public void checkLocationAndUpdateWeather(Location mLastLocation) {
+    public void updateLocation(Location mLastLocation) {
         if (mLastLocation != null) {
             latitudeAndLongitude[0] = mLastLocation.getLatitude() + "";
             latitudeAndLongitude[1] = mLastLocation.getLongitude() + "";
             saveLastLocationToSharedPreferences();
-            String LOG_TAG = getClass().getSimpleName();
-            Log.e("Latitude: " + latitudeAndLongitude[0] + " Longitude: " + latitudeAndLongitude[1], LOG_TAG);
-            updateWeather();
         }
     }
 
@@ -156,7 +157,7 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
         setTimeFrameMessage();
         if (thereIsANetwork()) {
             setLastUpdatedWithStoredTime();
-            executeRainTaskWithApiKey();
+            executeRainTask();
         } else {
             displayNetworkErrorMessage();
         }
@@ -192,7 +193,7 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
         lastUpdated.setText(getString(R.string.last_updated_message, prefs.getString("last_updated_key", "never")));
     }
 
-    public void executeRainTaskWithApiKey() {
+    public void executeRainTask() {
         GetRainTask rainTask = new GetRainTask(this);
         rainTask.execute();
     }
@@ -255,8 +256,7 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        getLocationIfHavePermission();
-        checkLocationAndUpdateWeather(getLocationIfHavePermission());
+        updateWeatherWithNewLocation();
     }
 
     @Override
@@ -269,4 +269,5 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
         String LOG_TAG = getClass().getSimpleName();
         Log.e("ERROR" + connectionResult, LOG_TAG);
     }
+
 }
