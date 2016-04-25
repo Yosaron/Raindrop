@@ -9,7 +9,6 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
     private final Callback resultCallback;
     private final String LOG_TAG = GetRainTask.class.getSimpleName();
 
-
     public GetRainTask(Callback resultCallback) {
         this.resultCallback = resultCallback;
     }
@@ -23,6 +22,8 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
 
         String getTimeFrame();
 
+        String getApiKey();
+
         String[] getLatitudeAndLongitude();
     }
 
@@ -34,13 +35,10 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
 
     @Override
     protected Double doInBackground(String... params) {
-        if (params.length == 0) {
-            return null;
-        }
-
         try {
-            WeatherDataFetcher forecastWeatherDataFetcher = new ForecastWeatherDataFetcher(resultCallback.getLatitudeAndLongitude(), params[0]);
-            return forecastWeatherDataFetcher.getPercentageChanceOfRain(resultCallback.getTimeFrame());
+            DataFetcher forecastWeatherDataFetcher = new ForecastDataFetcher(resultCallback.getLatitudeAndLongitude(), resultCallback.getApiKey());
+            JsonParser parser = new JsonParser(forecastWeatherDataFetcher.fetchWeatherData());
+            return parser.getPercentageChanceOfRain(resultCallback.getTimeFrame());
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }

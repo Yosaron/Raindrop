@@ -1,6 +1,5 @@
 package com.example.alexahern.raindrop;
 
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -22,12 +21,12 @@ import java.net.URL;
 precipitation percentage
  */
 
-public class ForecastWeatherDataFetcher implements WeatherDataFetcher {
+public class ForecastDataFetcher implements DataFetcher {
     private String[] latitudeAndLongitude;
     private final String API_KEY;
     private final String TAG;
 
-    public ForecastWeatherDataFetcher(String[] latitudeAndLongitude, String api_key) {
+    public ForecastDataFetcher(String[] latitudeAndLongitude, String api_key) {
         this.latitudeAndLongitude = latitudeAndLongitude;
         this.API_KEY = api_key;
         this.TAG = getClass().toString();
@@ -79,20 +78,7 @@ public class ForecastWeatherDataFetcher implements WeatherDataFetcher {
     }
 
     @Override
-    public String downloadFromUri() {
+    public String fetchWeatherData() {
         return fetchUri(buildUri());
-    }
-
-    @Override
-    public Double getPercentageChanceOfRain(String timeFrame)
-            throws JSONException {
-        String jsonStr = downloadFromUri();
-        JSONObject fullForecast = new JSONObject(jsonStr);
-        JSONObject forecastForTimeFrame = fullForecast.getJSONObject(timeFrame)
-                .getJSONArray("data")
-                .getJSONObject(0);
-
-        Double probabilityOfRain = forecastForTimeFrame.getDouble("precipProbability");
-        return probabilityOfRain * 100;
     }
 }

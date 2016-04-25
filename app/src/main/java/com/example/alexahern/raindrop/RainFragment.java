@@ -66,6 +66,11 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
         return timeFrame;
     }
 
+    @Override
+    public String getApiKey() {
+        return this.getString(R.string.apikey);
+    }
+
     public String[] getLatitudeAndLongitude() {
         return latitudeAndLongitude;
     }
@@ -75,6 +80,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.rain_fragment, container, false);
         lastUpdated = ((TextView) rootView.findViewById(R.id.last_updated_textview));
+        setLastUpdatedWithStoredTime();
         chanceOfRain = (TextView) rootView.findViewById(R.id.rain_textview);
         periodOfMeasurement = (TextView) rootView.findViewById(R.id.periodOfMeasurement);
         setTimeFrameMessage();
@@ -188,7 +194,7 @@ public class RainFragment extends Fragment implements GetRainTask.Callback, Goog
 
     public void executeRainTaskWithApiKey() {
         GetRainTask rainTask = new GetRainTask(this);
-        rainTask.execute(getString(R.string.apikey));
+        rainTask.execute();
     }
 
     public void displayNetworkErrorMessage() {

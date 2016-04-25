@@ -9,12 +9,10 @@ import org.json.JSONException;
  */
 
 /*Interface for fetching the data from a Uri*/
-public interface WeatherDataFetcher {
+public interface DataFetcher {
     Uri buildUri();
 
     String fetchUri(Uri builtUri);
 
-    String downloadFromUri();
-
-    Double getPercentageChanceOfRain(String timeFrame) throws JSONException;
+    String fetchWeatherData();
 }
