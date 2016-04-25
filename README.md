@@ -8,6 +8,7 @@ A simple app to show the current percentage of precipitation.
 
 #To do
 - ~~Implement real location~~ DONE
+- Add location name
 - Show more detailed forecasts for the coming hours
 - Optimize layout for larger devices
 
