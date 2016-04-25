@@ -35,8 +35,6 @@ public class GetRainTask extends AsyncTask<String, Void, Double> {
         if (result != null) {
             rainFragmentCallback.displayResult(result.intValue());
             rainFragmentCallback.setShareIntent("There is a " + result.intValue() + "% " + rainFragmentCallback.getTimeFrame() + " chance of rain.");
-        } else {
-            //Do nothing and keep displayed data the same
         }
     }
 

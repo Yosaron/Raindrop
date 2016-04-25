@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -39,6 +40,7 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
     private TextView chanceOfRain;
     private TextView periodOfMeasurement;
     private TextView lastUpdated;
+    private GetRainTask rainTask;
 
     private String timeFrame;
     private String[] latitudeAndLongitude = new String[2];
@@ -194,7 +196,7 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
     }
 
     public void executeRainTask() {
-        GetRainTask rainTask = new GetRainTask(this);
+        rainTask = new GetRainTask(this);
         rainTask.execute();
     }
 
@@ -262,6 +264,13 @@ public class RainFragment extends Fragment implements FragmentCallback, GoogleAp
     @Override
     public void onConnectionSuspended(int i) {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(rainTask != null && rainTask.getStatus() == AsyncTask.Status.RUNNING)
+            rainTask.cancel(true);
     }
 
     @Override
